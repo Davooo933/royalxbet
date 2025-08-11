@@ -53,3 +53,17 @@ router.post('/login', async (req, res) => {
   const token = jwt.sign({ sub: user.id, role: user.role, email: user.email }, process.env.JWT_SECRET || 'changeme', { expiresIn: '7d' });
   return res.json({ token });
 });
+
+router.get('/me', async (req, res) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET || 'changeme') as { sub: string };
+    const user = await prisma.user.findUnique({ where: { id: payload.sub }, select: { id: true, email: true, role: true, balanceCents: true, depositAddress: true } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    return res.json(user);
+  } catch {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+});

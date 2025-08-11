@@ -4,6 +4,10 @@ import { z } from 'zod';
 import crypto from 'crypto';
 export const router = Router();
 const prisma = new PrismaClient();
+router.get('/list', async (_req, res) => {
+    const games = await prisma.game.findMany({ where: { isEnabled: true }, orderBy: { key: 'asc' }, select: { key: true, name: true, isEnabled: true } });
+    res.json(games);
+});
 const ALL_GAME_KEYS = [
     'COINFLIP', 'DICE', 'CRASH', 'PLINKO', 'ROULETTE', 'SLOTS',
     'BLACKJACK', 'DOUBLE', 'HILO', 'BINS', 'WHEEL',
