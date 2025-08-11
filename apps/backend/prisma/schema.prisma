@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  email          String   @unique
+  passwordHash   String
+  role           UserRole @default(USER)
+  balanceCents   Int      @default(0)
+  referralCode   String   @unique
+  referredById   String?  
+  referredBy     User?    @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals      User[]   @relation("UserReferrals")
+  bets           Bet[]
+  transactions   Transaction[]
+  walletAddress  String?  // Tron address for withdrawals
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model Game {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  key         String   @unique // e.g., COINFLIP, DICE, CRASH, PLINKO, ROULETTE, SLOTS
+  name        String
+  rtpTargetBp Int      @default(3000) // 30.00% RTP to players; 70% margin
+  isEnabled   Boolean  @default(true)
+  rounds      Round[]
+  bets        Bet[]
+}
+
+model Round {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  gameId        String
+  game          Game     @relation(fields: [gameId], references: [id])
+  resultPayload Json     // opaque result object per game
+  totalWagerCents Int    @default(0)
+  totalPayoutCents Int   @default(0)
+  bets          Bet[]
+}
+
+model Bet {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  gameId         String
+  game           Game     @relation(fields: [gameId], references: [id])
+  roundId        String?
+  round          Round?   @relation(fields: [roundId], references: [id])
+  wagerCents     Int
+  payoutCents    Int      @default(0)
+  status         BetStatus @default(PENDING)
+  clientSeed     String
+  serverSeedHash String
+  nonce          Int
+  selection      Json // user choice per game
+}
+
+enum BetStatus {
+  PENDING
+  WON
+  LOST
+  CANCELED
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  amountCents Int
+  currency    String   // USDT
+  type        TxType
+  status      TxStatus @default(PENDING)
+  txHash      String?
+  address     String?
+  memo        String?
+}
+
+enum TxType {
+  DEPOSIT
+  WITHDRAWAL
+  BONUS
+  ADJUSTMENT
+}
+
+enum TxStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
