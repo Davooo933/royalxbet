@@ -4,10 +4,12 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { GamesHub } from './pages/GamesHub';
 import './styles.css';
+import { I18nProvider, useI18n } from './i18n';
 
-export function App() {
+function AppInner() {
   const [route, setRoute] = useState(window.location.hash.slice(1) || '/');
   const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const { t, setLocale, locale } = useI18n();
 
   useEffect(() => {
     const onHash = () => setRoute(window.location.hash.slice(1) || '/');
@@ -19,18 +21,22 @@ export function App() {
   return (
     <div className="app-root">
       <nav className="navbar">
-        <div className="brand">RoyalX Casino</div>
+        <div className="brand">{t('app.brand')}</div>
         <div className="nav-links">
+          <select className="input" style={{ maxWidth: 120 }} value={locale} onChange={(e)=>setLocale(e.target.value as any)}>
+            <option value="en">EN</option>
+            <option value="ru">RU</option>
+          </select>
           {!token ? (
             <>
-              <a href="#/login">Login</a>
-              <a href="#/register">Register</a>
+              <a href="#/login">{t('nav.login')}</a>
+              <a href="#/register">{t('nav.register')}</a>
             </>
           ) : (
             <>
-              <a href="#/">Dashboard</a>
-              <a href="#/games">Games</a>
-              <button className="btn" onClick={logout}>Logout</button>
+              <a href="#/">{t('nav.dashboard')}</a>
+              <a href="#/games">{t('nav.games')}</a>
+              <button className="btn" onClick={logout}>{t('nav.logout')}</button>
             </>
           )}
         </div>
@@ -42,5 +48,13 @@ export function App() {
         {token && route.startsWith('/games') && <GamesHub token={token} path={route} />}
       </main>
     </div>
+  );
+}
+
+export function App(){
+  return (
+    <I18nProvider>
+      <AppInner />
+    </I18nProvider>
   );
 }
