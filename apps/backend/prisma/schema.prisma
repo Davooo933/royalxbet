@@ -22,6 +22,8 @@ model User {
   bets           Bet[]
   transactions   Transaction[]
   walletAddress  String?  // Tron address for withdrawals
+  depositAddress String?  // Per-user USDT TRC-20 deposit address
+  depositPrivKey String?  // WARNING: store encrypted in production
 }
 
 enum UserRole {
