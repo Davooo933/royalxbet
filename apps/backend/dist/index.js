@@ -40,7 +40,20 @@ app.listen(PORT, async () => {
         { key: 'CRASH', name: 'Crash' },
         { key: 'PLINKO', name: 'Plinko' },
         { key: 'ROULETTE', name: 'Roulette' },
-        { key: 'SLOTS', name: 'Slots' }
+        { key: 'SLOTS', name: 'Slots' },
+        { key: 'BLACKJACK', name: 'Blackjack' },
+        { key: 'DOUBLE', name: 'Double' },
+        { key: 'HILO', name: 'HiLo' },
+        { key: 'BINS', name: 'Bins' },
+        { key: 'WHEEL', name: 'Wheel' },
+        { key: 'SLOTS_GATES_OF_OLYMPUS', name: 'Slots - Gates of Olympus (theme)' },
+        { key: 'SLOTS_LUCKY_LADYS_CHARM', name: 'Slots - Lucky Lady’s Charm (theme)' },
+        { key: 'SLOTS_BOOK_OF_RA', name: 'Slots - Book Of Ra (theme)' },
+        { key: 'SLOTS_THE_MONEY_GAME', name: 'Slots - The Money Game (theme)' },
+        { key: 'SLOTS_3_COINS_EGYPT', name: 'Slots - 3 Coins Egypt (theme)' },
+        { key: 'SLOTS_GONZOS_QUEST', name: 'Slots - Gonzo’s Quest (theme)' },
+        { key: 'SLOTS_FRUIT_COCKTAIL', name: 'Slots - Fruit Cocktail (theme)' },
+        { key: 'SLOTS_GHOST_PIRATES', name: 'Slots - Ghost Pirates (theme)' }
     ];
     for (const g of defaultGames) {
         await prisma.game.upsert({
