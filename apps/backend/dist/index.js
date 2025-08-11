@@ -9,6 +9,7 @@ import { router as adminRouter } from './routes/admin.js';
 import { router as gamesRouter } from './routes/games.js';
 import { router as walletRouter } from './routes/wallet.js';
 import { ensureAdmin, ensureAuthed } from './middleware/authz.js';
+import { runTronDepositPoller, runTronWithdrawalBroadcaster } from './workers/tron.js';
 const prisma = new PrismaClient();
 const app = express();
 app.use(helmet());
@@ -62,5 +63,8 @@ app.listen(PORT, async () => {
             create: { key: g.key, name: g.name }
         });
     }
+    // Start background workers
+    runTronDepositPoller();
+    runTronWithdrawalBroadcaster();
     console.log(`Casino backend listening on :${PORT}`);
 });
