@@ -8,6 +8,7 @@ export function GamesHub({ token, path }: { token: string; path: string }) {
   const [games, setGames] = useState<Game[]>([]);
   const [balance, setBalance] = useState<number>(0);
   const [message, setMessage] = useState('');
+  const [win, setWin] = useState<string>('');
   const { t } = useI18n();
 
   useEffect(() => { (async () => {
@@ -20,10 +21,14 @@ export function GamesHub({ token, path }: { token: string; path: string }) {
   })(); }, [token]);
 
   async function bet(gameKey: string, wager: number, selection: any) {
-    setMessage('');
+    setMessage(''); setWin('');
     const clientSeed = Math.random().toString(36).slice(2);
     const { data } = await api(token).post('/games/bet', { gameKey, wagerCents: Math.round(wager*100), selection, clientSeed });
     setMessage(`${t('games.result')} ${(data.payoutCents/100).toFixed(2)} ${t('generic.usdt')}`);
+    if (data.payoutCents > 0) {
+      setWin(`+${(data.payoutCents/100).toFixed(2)} ${t('generic.usdt')}`);
+      setTimeout(()=>setWin(''), 2000);
+    }
     const me = await api(token).get('/auth/me');
     setBalance(me.data.balanceCents);
   }
@@ -35,26 +40,31 @@ export function GamesHub({ token, path }: { token: string; path: string }) {
   }, [games]);
 
   return (
-    <div className="grid">
-      <div className="card" style={{ gridColumn: '1 / -1' }}>
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <h2>{t('games.title')}</h2>
-          <div className="badge">{t('games.balance')} {(balance/100).toFixed(2)} {t('generic.usdt')}</div>
+    <>
+      <div className={`win-overlay ${win ? 'show' : ''}`}>
+        {win && (<div className="win-banner"><div className="win-text">{win}</div></div>)}
+      </div>
+      <div className="grid">
+        <div className="card" style={{ gridColumn: '1 / -1' }}>
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <h2>{t('games.title')}</h2>
+            <div className="badge">{t('games.balance')} {(balance/100).toFixed(2)} {t('generic.usdt')}</div>
+          </div>
+          {message && <div style={{ marginTop: 8 }}>{message}</div>}
         </div>
-        {message && <div style={{ marginTop: 8 }}>{message}</div>}
-      </div>
 
-      {grouped.core.map(g => (
-        <GameTile key={g.key} game={g} onBet={bet} />
-      ))}
+        {grouped.core.map(g => (
+          <GameTile key={g.key} game={g} onBet={bet} />
+        ))}
 
-      <div className="card" style={{ gridColumn: '1 / -1' }}>
-        <h3>{t('games.themed')}</h3>
+        <div className="card" style={{ gridColumn: '1 / -1' }}>
+          <h3>{t('games.themed')}</h3>
+        </div>
+        {grouped.themeds.map(g => (
+          <GameTile key={g.key} game={g} onBet={bet} isSlots />
+        ))}
       </div>
-      {grouped.themeds.map(g => (
-        <GameTile key={g.key} game={g} onBet={bet} isSlots />
-      ))}
-    </div>
+    </>
   );
 }
 
